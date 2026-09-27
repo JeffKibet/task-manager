@@ -42,3 +42,28 @@ def create_task():
     next_id += 1  
  
     return jsonify({"id": new_task_id, **new_task}), 201
+
+@app.route("/tasks/<int:task_id>", methods=["PUT"])
+def update_task(task_id):
+    task = tasks.get(task_id)
+ 
+    if task is None:
+        return jsonify({"error": "Task not found"}), 404
+ 
+    data = request.get_json(silent=True)
+ 
+    if data is None:
+        return jsonify({"error": "Please send JSON data"}), 400
+ 
+    if "title" in data:
+        title = data["title"]
+        if not title or not isinstance(title, str) or title.strip() == "":
+            return jsonify({"error": "'title' cannot be empty"}), 400
+        task["title"] = title.strip()
+ 
+    if "done" in data:
+        if not isinstance(data["done"], bool):
+            return jsonify({"error": "'done' must be true or false"}), 400
+        task["done"] = data["done"]
+ 
+    return jsonify(task)
